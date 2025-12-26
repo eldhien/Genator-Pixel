@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pixel Art Generator</title>
+  <!-- 🔗 Link ke CSS eksternal -->
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Pixel Art Generator</h1>
+    <div class="upload-area">
+      <input type="file" id="imageFile" accept="image/jpeg,image/png" />
+      <br />
+      <button id="uploadBtn" onclick="uploadImage()">Generate Pixel Art</button>
+      <div class="loading" id="loading">Processing image... please wait</div>
+    </div>
+    <img id="result" alt="Pixel Art Result" />
+    <footer>
+      Upload a photo to convert it into retro-style pixel art!
+    </footer>
+  </div>
+
+  <script>
+    async function uploadImage() {
+      const fileInput = document.getElementById("imageFile");
+      const file = fileInput.files[0];
+      const resultImg = document.getElementById("result");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const loading = document.getElementById("loading");
+
+      if (!file) {
+        alert("Please choose an image file first.");
+        return;
+      }
+
+      resultImg.style.display = "none";
+      uploadBtn.disabled = true;
+      loading.style.display = "block";
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      try {
+        const response = await fetch("/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorMsg = await response.text();
+          throw new Error(errorMsg || "Failed to process image");
+        }
+
+        const data = await response.json();
+        const imageUrl = `/results/${data.filename}`;
+
+        resultImg.src = imageUrl;
+        resultImg.style.display = "block";
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error: " + (error.message || "Unknown error"));
+      } finally {
+        uploadBtn.disabled = false;
+        loading.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
